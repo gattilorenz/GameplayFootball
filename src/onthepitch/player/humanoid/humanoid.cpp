@@ -85,7 +85,7 @@ bool _PassFiddlingEnabled() {
 void Humanoid::Process() {
   DO_VALIDATION;
   auto currentMentalImage = match->GetMentalImage(mentalImageTime);
-  // this might be the solution to long-term inbalance
+  // this might be the solution to long-term imbalance
   decayingPositionOffset *= 0.95f;
   if (decayingPositionOffset.GetLength() < 0.005) decayingPositionOffset.Set(0);
   decayingDifficultyFactor = clamp(decayingDifficultyFactor - 0.002f, 0.0f, 1.0f);
@@ -512,7 +512,7 @@ void Humanoid::Process() {
       else if (currentAnim.functionType == e_FunctionType_Shot) {
         DO_VALIDATION;
 
-        // alter direction, if neeeded
+        // alter direction, if needed
         Vector3 ballDirection = currentAnim.originatingCommand.touchInfo.desiredDirection;
         Vector3 inputDirection = currentAnim.originatingCommand.touchInfo.inputDirection;
         if (CastPlayer()->ExternalControllerActive()) inputDirection = CastPlayer()->ExternalController()->GetDirection();
@@ -1847,7 +1847,11 @@ signed int Humanoid::GetBestCheatableAnimID(const DataSet &sortedDataSet, bool u
     boost::shared_ptr<FootballAnimationExtension> footballExtension = boost::static_pointer_cast<FootballAnimationExtension>(anim->GetExtension("football"));
 
     int totalTouches = footballExtension->GetTouchCount();
+#ifdef WIN32
+    std::vector<int> touchIDs(totalTouches);
+#else
     int touchIDs[totalTouches];
+#endif
     int count = 0;
 
     int defaultTouchFrame = atoi(anim->GetVariable("touchframe").c_str());

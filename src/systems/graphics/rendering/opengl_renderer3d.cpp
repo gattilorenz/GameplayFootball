@@ -26,13 +26,19 @@
 #include <OpenGL/gl3ext.h>
 #else
 #include <GL/gl.h>
-#include <GL/glext.h>
 #endif
-#include <cmath>
-#include "wrap_SDL.h"
+
+#ifdef __linux__
+#include <GL/glext.h>
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#elif defined(WIN32)
+#include <SDL2/SDL_opengl_glext.h>
+#endif
+
+#include <cmath>
+#include "wrap_SDL.h"
 
 #include "../../../base/geometry/aabb.hpp"
 #include "../../../base/geometry/trianglemeshutils.hpp"
@@ -44,10 +50,6 @@
 #include "../../../types/command.hpp"
 #include "../../../utils/gui2/widgets/image.hpp"
 #include "../resources/texture.hpp"
-
-#ifdef WIN32
-#include <wingdi.h>
-#endif
 
 namespace blunted {
 
@@ -73,10 +75,6 @@ OpenGLRenderer3D::OpenGLRenderer3D() {
 
 OpenGLRenderer3D::~OpenGLRenderer3D() {
     DO_VALIDATION;
-    DeleteSimpleVertexBuffer(overlayBuffer);
-    DeleteSimpleVertexBuffer(quadBuffer);
-    // Shut down all SDL subsystems
-    SDL_Quit();
 };
 
 void OpenGLRenderer3D::SwapBuffers() {
@@ -436,6 +434,7 @@ void OpenGLRenderer3D::CreateContextSdl() {
 #undef SDL_PROC
 }
 
+#ifdef __linux__
 // Helper macro to check for EGL errors.
 #define FAIL_IF_EGL_ERROR(egl_expr)                             \
   do {                                                          \
@@ -527,6 +526,7 @@ void OpenGLRenderer3D::CreateContextEgl() {
 #include "sdl_glfuncs.h"
 #undef SDL_PROC
 }
+#endif
 
 bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp,
                                      bool fullscreen) {
@@ -537,13 +537,16 @@ bool OpenGLRenderer3D::CreateContext(int width, int height, int bpp,
   // default values
   this->cameraNear = 30.0;
   this->cameraFar = 270.0;
-
+#ifdef __linux__
   if (!getenv("DISPLAY")) {
     std::cout << "No DISPLAY defined, doing off-screen rendering" << std::endl;
     CreateContextEgl();
   } else {
     CreateContextSdl();
   }
+#else
+  CreateContextSdl();
+#endif
   largest_supported_anisotropy = 2;
   mapping.glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT,
                       &largest_supported_anisotropy);
@@ -593,6 +596,8 @@ void OpenGLRenderer3D::Exit() {
   }
 
   currentShader = shaders.end();
+  DeleteSimpleVertexBuffer(overlayBuffer);
+  DeleteSimpleVertexBuffer(quadBuffer);
 
   // assert(views.size() == 0);
 }
@@ -1939,12 +1944,20 @@ bool OpenGLRenderer3D::CheckFrameBufferStatus() {
 void OpenGLRenderer3D::SetRenderTargets(
     std::vector<e_TargetAttachment> targetAttachments) {
   DO_VALIDATION;
+#ifdef WIN32
+  std::vector<GLenum> targets(targetAttachments.size());
+#else
   GLenum targets[targetAttachments.size()];
+#endif
   for (int i = 0; i < (signed int)targetAttachments.size(); i++) {
     DO_VALIDATION;
     targets[i] = GetGLTargetAttachment(targetAttachments[i]);
   }
+#ifdef WIN32
+  mapping.glDrawBuffers(targetAttachments.size(), &targets[0]);
+#else
   mapping.glDrawBuffers(targetAttachments.size(), targets);
+#endif
 }
 
   // utility
@@ -2027,8 +2040,13 @@ void GeneratePoissonKernel(float *kernel, unsigned int kernelSize) {
     DO_VALIDATION;
     unsigned int candidateSize = 32;
 
+#ifdef WIN32
+    std::vector<Vector3> samples(kernelSize);
+    std::vector<Vector3> candidates(candidateSize);
+#else
     Vector3 samples[kernelSize];
     Vector3 candidates[candidateSize];
+#endif
 
     for (unsigned int i = 0; i < kernelSize; i++) {
       DO_VALIDATION;
@@ -2096,8 +2114,11 @@ void GeneratePoissonKernel(float *kernel, unsigned int kernelSize) {
     }
 
   } else {  // PRECALCULATED SET
-
+#ifdef WIN32
+    std::vector<Vector3> samples(kernelSize);
+#else
     Vector3 samples[kernelSize];
+#endif
 
     // these samples seem relatively close to z = 0 (much 'ground effect' on
     // flat surface)
@@ -2251,7 +2272,11 @@ void OpenGLRenderer3D::LoadShader(const std::string &name,
 
     unsigned int kernelSize = 32;
     // SetUniformInt("ambient", "SSAO_kernelSize", kernelSize);
+#ifdef WIN32
+    std::vector<float> SSAO_kernel(kernelSize * 3);
+#else
     float SSAO_kernel[kernelSize * 3];
+#endif
     GeneratePoissonKernel(&SSAO_kernel[0], kernelSize);
     SetUniformFloat3Array("ambient", "SSAO_kernel", kernelSize,
                           &SSAO_kernel[0]);

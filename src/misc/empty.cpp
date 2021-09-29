@@ -11,31 +11,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdio.h>
-#ifndef WIN32
-#include <execinfo.h>
-#include <unistd.h>
-#endif
-#include <signal.h>
-#include "backtrace.h"
-#include <stdlib.h>
-
-void print_stacktrace() {
-  void *array[20];
-  size_t size;
-#ifndef WIN32
-  size = backtrace(array, 20);
-  backtrace_symbols_fd(array, size, STDERR_FILENO);
-#endif
-}
-
-
-void handler(int sig) {
-  print_stacktrace();
-  printf("Error: signal %d:\n", sig);
-  exit(1);
-}
-
-void install_stacktrace() {
-  signal(SIGSEGV, handler);
-}
+// This file is needed for installing gfootball_engine in development mode (`pip install -e .`).
