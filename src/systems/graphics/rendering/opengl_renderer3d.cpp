@@ -303,7 +303,6 @@ struct GLfunctions {
 
   void OpenGLRenderer3D::DeleteSimpleVertexBuffer(VertexBufferID vertexBufferID) {
     GLuint glVertexBufferID = vertexBufferID.bufferID;
-    //Log(e_Notice, "OpenGLRenderer3D", "DeleteSimpleVertexBuffer", "Deleting simple vertex buffer, id " + int_to_str(vertexBufferID.bufferID));
     mapping.glDeleteBuffers(1, &glVertexBufferID);
 
     GLuint glVertexArrayID = vertexBufferID.vertexArrayID;
@@ -362,11 +361,13 @@ struct GLfunctions {
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);  // DISABLED?
 
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#ifdef __APPLE__
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#endif
 
     // todo: remember to enable this later on, after migrating to sdl 2 (though it is on by default with most drivers, or so it seems)
     //SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
@@ -1029,7 +1030,6 @@ struct GLfunctions {
   }
 
   void OpenGLRenderer3D::DeleteVertexBuffer(VertexBufferID vertexBufferID) {
-    //Log(e_Notice, "OpenGLRenderer3D", "DeleteVertexBuffer", "Deleting vertex buffer, id " + int_to_str(vertexBufferID.bufferID));
     GLuint glVertexBufferID = vertexBufferID.bufferID;
     mapping.glDeleteBuffers(1, &glVertexBufferID);
 

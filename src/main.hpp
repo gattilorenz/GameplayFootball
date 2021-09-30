@@ -70,6 +70,7 @@ int PredictFrameTimeToGo_ms(int frameCount);
 const std::vector<IHIDevice*> &GetControllers();
 
 #ifndef WIN32
+// VK: TODO: Is const char required on Unix?
 int main(int argc, char** argv);
 #endif
 

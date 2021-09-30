@@ -2,24 +2,12 @@ cmake_minimum_required(VERSION 3.4)
 
 if(WIN32)
   # Check for required Environment variables
-  if(NOT DEFINED CMAKE_GENERATOR_PLATFORM)
-    message(FATAL_ERROR "CMAKE_GENERATOR_PLATFORM is not defined. Add -Ax64 or -AWin32 to cmake command")
-  elseif(NOT DEFINED ENV{VCPKG_ROOT})
+  if(NOT DEFINED ENV{VCPKG_ROOT})
+    # set(VCPKG_ROOT "C:\\repo\\vcpkg_latest")
     message(FATAL_ERROR "VCPKG_ROOT is not defined. Set the location of vcpkg")
   endif()
 
-  if(${CMAKE_GENERATOR_PLATFORM} STREQUAL Win32)
-    set(VCPKG_TARGET_TRIPLET x86-windows)
-  elseif(${CMAKE_GENERATOR_PLATFORM} STREQUAL x64)
-    set(VCPKG_TARGET_TRIPLET x64-windows)
-  else()
-    message(FATAL_ERROR "Unsupported Generator Platform, only Win32 or x64 are supported")
-  endif()
-
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
-  # TODO: Check if required
-  set(VCPKG_MANIFEST_DIR "${CMAKE_SOURCE_DIR}")
-  # set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 else()  # UNIX
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules")
 endif()
