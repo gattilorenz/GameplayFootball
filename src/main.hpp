@@ -16,6 +16,7 @@
 #include "base/properties.hpp"
 
 #include "utils/database.hpp"
+#include "sqlite3.h"
 
 enum e_DebugMode {
   e_DebugMode_Off,
@@ -68,7 +69,6 @@ int PredictFrameTimeToGo_ms(int frameCount);
 
 const std::vector<IHIDevice*> &GetControllers();
 
-// VK: TODO Process MinGW correctly (see main.cpp for hints)
 #ifndef WIN32
 int main(int argc, char** argv);
 #endif

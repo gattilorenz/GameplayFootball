@@ -36,9 +36,6 @@
 
 #include "SDL2/SDL_ttf.h"
 
-// VK: TODO Update sqlite3
-#include "libs/sqlite3/sqlite3.h"
-
 #if defined(WIN32) && defined(__MINGW32__)
 #undef main
 #endif
@@ -274,8 +271,8 @@ class ThreadHudThread : public Thread {
 };
 
 
+// VK: TODO: Check if platform specific ifdef is required
 int main(int argc, char** argv) {
-
   config = new Properties();
   if (argc > 1) configFile = argv[1];
   config->LoadFile(configFile.c_str());
