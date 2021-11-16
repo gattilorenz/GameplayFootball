@@ -47,7 +47,7 @@ To install required dependencies you need [`brew`](https://brew.sh/) which can b
 
 ```bash
 # Install dependencies
-brew install git cmake sdl2 sdl2_image sdl2_ttf sdl2_gfx boost openal-soft
+brew install git cmake sdl2 sdl2_image sdl2_ttf sdl2_gfx boost openal-soft sqlite
 # Navigate to the directory where you want to put the repository
 cd ~
 # Clone the repository
@@ -61,7 +61,7 @@ cd build
 # Generate Makefile
 cmake ..
 # Compile the game
-make -j$(nproc)
+make
 
 # Run the game (Currently is not working)
 ./gameplayfootball
