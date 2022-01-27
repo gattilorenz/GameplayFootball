@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 
+cmake_policy(SET CMP0057 NEW)
+cmake_policy(SET CMP0072 NEW)
+
 set(PACKAGE GameplayFootball)
 
 set(VERSION_MAJOR 0)
@@ -53,6 +56,7 @@ include_directories(${SQLite3_INCLUDE_DIRS})
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
+
 # Include the sources
 include(sources.cmake)
 
@@ -104,3 +108,4 @@ set(LIBRARIES gamelib hidlib menulib datalib leaguelib blunted2
 
 add_executable(gameplayfootball WIN32 ${CORE_SOURCES} ${CORE_HEADERS})
 target_link_libraries(gameplayfootball ${LIBRARIES})
+
