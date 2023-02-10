@@ -58,7 +58,7 @@ Vector3 GetDefaultRolePosition(e_PlayerRole role) {
 
 TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
 
-  DatabaseResult *result = GetDB()->Query("select teams.name, teams.logo_url, teams.kit_url, teams.formation_xml, teams.formation_factory_xml, teams.tactics_xml, teams.tactics_factory_xml, teams.shortname, teams.color1, teams.color2 from teams, leagues where teams.id = " + int_to_str(databaseID) + " and leagues.id = teams.league_id limit 1");
+  DatabaseResult *result = GetDB()->Query("select teams.name, teams.city, teams.stadium, teams.logo_url, teams.kit_url, teams.formation_xml, teams.formation_factory_xml, teams.tactics_xml, teams.tactics_factory_xml, teams.shortname, teams.color1, teams.color2 from teams, leagues where teams.id = " + int_to_str(databaseID) + " and leagues.id = teams.league_id limit 1");
 
   std::string formationString;
   std::string factoryFormationString;
@@ -83,6 +83,8 @@ TeamData::TeamData(int teamDatabaseID) : databaseID(teamDatabaseID) {
     if (result->header.at(c).compare("shortname") == 0) shortName = result->data.at(0).at(c);
     if (result->header.at(c).compare("color1") == 0) color1 = GetVectorFromString(result->data.at(0).at(c));
     if (result->header.at(c).compare("color2") == 0) color2 = GetVectorFromString(result->data.at(0).at(c));
+    if (result->header.at(c).compare("city") == 0) city = result->data.at(0).at(c);
+    if (result->header.at(c).compare("stadium") == 0) stadium = result->data.at(0).at(c);
   }
 
   if (shortName.compare("") == 0) {

@@ -648,9 +648,9 @@ json Match::MatchInfo() {
     inMatchInfo["c_Referee"] = "Jeroen Manschot";
     inMatchInfo["c_RefereeFirstName"] = "Jeroen";
     inMatchInfo["c_RefereeLastName"] = "Manschot";
-    inMatchInfo["c_Stadium"] = "Grolsch Veste";
+    inMatchInfo["c_Stadium"] = teams[0]->GetTeamData()->GetStadium();
+	inMatchInfo["c_City"] = teams[0]->GetTeamData()->GetCity();
 
-    
 
     string fullTime = to_string(matchData->GetGoalCount(0)) + "-" + to_string(matchData->GetGoalCount(1));
     string halftime =
