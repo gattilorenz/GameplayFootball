@@ -471,12 +471,16 @@ void Match::StoreMatchAction(const string &action, int actionCodes[], PlayerData
     matchAction["n_ActionCode2"] =  actionCodes[1];
     matchAction["n_ActionCode3"] =  actionCodes[2];
     matchAction["n_ActionSet"] =  actionCodes[3];
+    
+    matchAction["n_ActionReasonID"] =  -1;
+    matchAction["c_ActionReason"] =  "";
+    matchAction["c_ActionInfo"] =  "";
 
     matchAction["n_ActionTime"] =  matchTime;
     matchAction["n_HomeGoals"] =  GetMatchData()->GetGoalCount(0);
     matchAction["n_AwayGoals"] =  GetMatchData()->GetGoalCount(1);
 
-    int homeOrAway = (teams[0]->GetTeamData() == teamData) ? 0 : 1;
+    int homeOrAway = (teams[0]->GetTeamData() == teamData) ? 1 : -1;
     matchAction["n_HomeOrAway"] =  homeOrAway;
 
     matchActions.push_back(matchAction);
@@ -500,7 +504,9 @@ void Match::StoreMatchAction(const string &action, int actionCodes[], PlayerData
  */
 json Match::MatchLineup() {
     json matchLineup;
+    int homeOrAway = 1;
     for (Team *team: teams) {
+		
         for (Player *teamPlayer: team->GetAllPlayers()) {
             json inMatchLineup;
 
@@ -520,15 +526,94 @@ json Match::MatchLineup() {
             inMatchLineup["c_PersonShort"] =  playerData->GetLastName();
             inMatchLineup["c_PersonSort"] =
                               playerData->GetLastName() + ", " + playerData->GetFirstName();
-
+                              
             inMatchLineup["c_Team"] =  team->GetTeamData()->GetName();
             inMatchLineup["c_TeamShort"] =  team->GetTeamData()->GetShortName();
-
+			inMatchLineup["n_HomeOrAway"] = homeOrAway;
             inMatchLineup["n_FunctionCode"] =  functionCode;
+            inMatchLineup["n_FunctionType"] =  functionCode;
+            inMatchLineup["n_ActionSet"] = 4;
+            inMatchLineup["n_PersonID"] = -1;
 
             matchLineup.push_back(inMatchLineup);
         }
+        //add manager
+		json headCoach;
+    	headCoach["c_Function"] = "Trainer";
+    	headCoach["c_FunctionShort"] = "Tr.";
+    	headCoach["n_FunctionCode"] = 16;
+        headCoach["n_FunctionType"] =  16;
+		headCoach["n_HomeOrAway"] = homeOrAway;
+		headCoach["n_ActionSet"] = 8;
+    	headCoach["c_Team"] =  team->GetTeamData()->GetName();
+    	headCoach["c_TeamShort"] =  team->GetTeamData()->GetShortName();
+    	headCoach["n_PersonID"] = -1;
+
+		if (team->GetTeamData()->GetShortName() == "AJA") { //Ajax
+			headCoach["c_Person"]= "John Heitinga";
+			headCoach["c_PersonFirstName"] = "Heitinga";
+			headCoach["c_PersonLastName"] = "Heitinga";
+		}
+		if (team->GetTeamData()->GetShortName() == "ARS") { //Arsenal
+			headCoach["c_Person"]= "Mikel Arteta";
+			headCoach["c_PersonFirstName"] = "Mikel";
+			headCoach["c_PersonLastName"] = "Arteta";
+		}
+		if (team->GetTeamData()->GetShortName() == "FCB") { //Barcelona
+			headCoach["c_Person"]= "Xavi";
+			headCoach["c_PersonFirstName"] = "Xavier";
+			headCoach["c_PersonLastName"] = "Hernández Creus";
+		}
+		if (team->GetTeamData()->GetShortName() == "BAY") { //Bayern
+			headCoach["c_Person"]= "Julian Nagelsmann";
+			headCoach["c_PersonFirstName"] = "Julian";
+			headCoach["c_PersonLastName"] = "Nagelsmann";
+		}
+		if (team->GetTeamData()->GetShortName() == "DRT") { //Borussia Dortmund
+			headCoach["c_Person"]= "Edin Terzić";
+			headCoach["c_PersonFirstName"] = "Edin";
+			headCoach["c_PersonLastName"] = "Terzić";
+		}
+		if (team->GetTeamData()->GetShortName() == "UTD") { //Manchester
+			headCoach["c_Person"]= "Erik Ten Hag";
+			headCoach["c_PersonFirstName"] = "Erik";
+			headCoach["c_PersonLastName"] = "Ten Hag";
+		}
+		if (team->GetTeamData()->GetShortName() == "PSV") { //PSV
+			headCoach["c_Person"]= "Ruud van Nistelrooy";
+			headCoach["c_PersonFirstName"] = "Ruud";
+			headCoach["c_PersonLastName"] = "Van Nistelrooy";
+		}
+		if (team->GetTeamData()->GetShortName() == "RMD") { //Real Madrid
+			headCoach["c_Person"]= "Carlo Ancelotti";
+			headCoach["c_PersonFirstName"] = "Carlo";
+			headCoach["c_PersonLastName"] = "Ancelotti";
+		}
+		headCoach["c_PersonShort"] = headCoach["c_PersonLastName"];
+		matchLineup.push_back(headCoach);
+		homeOrAway = -1;
     }
+    
+    json referee;
+    referee["c_Function"] = "Scheidsrechter",
+    referee["c_Person"] = "Jeroen Manschot",
+    referee["c_PersonFirstName"] = 0;
+	referee["c_PersonLastName"] = "Manschot";
+    referee["c_Team"] =  "";
+    referee["c_TeamShort"] =  "";
+	referee["c_PersonNatio"] = "Nederland";
+    referee["n_ActionID"] = 26178825;
+	referee["n_ActionSet"] = 9;
+    referee["n_ActionSort"] = 43;
+    referee["n_FunctionCode"] = 64;
+    referee["n_FunctionType"] = 64;
+    referee["n_HomeOrAway"] = 0;
+    referee["n_PersonGenderID"] = 1;
+    referee["n_PersonID"] = -1;
+    referee["n_PersonNatioGeoID"] = 2201;
+    referee["n_TeamID"] = 0;
+        
+    matchLineup.push_back(referee);
     return matchLineup;
 }
 
@@ -555,6 +640,17 @@ json Match::MatchInfo() {
     inMatchInfo["c_HomeTeamShort"] =  teams[0]->GetTeamData()->GetShortName();
     inMatchInfo["c_AwayTeam"] =  teams[1]->GetTeamData()->GetName();
     inMatchInfo["c_AwayTeamShort"] =  teams[1]->GetTeamData()->GetShortName();
+    inMatchInfo["c_AwayTeamShort"] =  teams[1]->GetTeamData()->GetShortName();    
+    
+    //random data for things that PASS *might* use:
+    inMatchInfo["c_Competition"] =  "UEFA Champions League"; 
+    inMatchInfo["c_City"] =  "Enschede";
+    inMatchInfo["c_Referee"] = "Jeroen Manschot";
+    inMatchInfo["c_RefereeFirstName"] = "Jeroen";
+    inMatchInfo["c_RefereeLastName"] = "Manschot";
+    inMatchInfo["c_Stadium"] = "Grolsch Veste";
+
+    
 
     string fullTime = to_string(matchData->GetGoalCount(0)) + "-" + to_string(matchData->GetGoalCount(1));
     string halftime =
@@ -562,7 +658,18 @@ json Match::MatchInfo() {
             ")";
     inMatchInfo["c_Score"] =  fullTime + " " + halftime;
 
-    auto date = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+	system_clock::time_point now = system_clock::now();
+    auto date = duration_cast<milliseconds>(now.time_since_epoch());
+    
+    //convert to month/year to guesstimate current season
+    time_t tt = system_clock::to_time_t(now);
+	tm local_tm = *localtime(&tt);
+	int curr_year = local_tm.tm_year + 1900;
+	int curr_month = local_tm.tm_mon + 1;
+	if (curr_month > 6) 
+	    inMatchInfo["c_Season"] = std::to_string(curr_year)+"/"+std::to_string(curr_year+1);
+	else
+		inMatchInfo["c_Season"] = std::to_string(curr_year-1)+"/"+std::to_string(curr_year);
 
     inMatchInfo["d_Date"] =  "/Date(" + to_string(date.count()) + ")/";
     inMatchInfo["d_DateLocal"] =  "/Date(" + to_string(date.count()) + ")/";
@@ -571,7 +678,10 @@ json Match::MatchInfo() {
 
     inMatchInfo["n_HomeGoals"] =  GetMatchData()->GetGoalCount(0);
     inMatchInfo["n_AwayGoals"] =  GetMatchData()->GetGoalCount(1);
-    inMatchInfo["n_Spectators"] =  0; // since it is a digital game
+    //extract random number of spectators between 2000 and 30,000
+    inMatchInfo["n_Spectators"] =  (rand() % 28 + 2)*100;;
+
+
 
     matchInfo.push_back(inMatchInfo);
     return matchInfo;
