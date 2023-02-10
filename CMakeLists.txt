@@ -57,6 +57,10 @@ include_directories(${SQLite3_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 
+
+find_package(nlohmann_json 3.10 REQUIRED)
+
+
 # Include the sources
 include(sources.cmake)
 
@@ -107,5 +111,4 @@ set(LIBRARIES gamelib hidlib menulib datalib leaguelib blunted2
         ${SDL2_LIBRARIES} ${OPENAL_LIBRARY} dl m ${OPENGL_LIBRARIES})
 
 add_executable(gameplayfootball WIN32 ${CORE_SOURCES} ${CORE_HEADERS})
-target_link_libraries(gameplayfootball ${LIBRARIES})
-
+target_link_libraries(gameplayfootball ${LIBRARIES} nlohmann_json::nlohmann_json)

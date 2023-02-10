@@ -36,10 +36,10 @@
 #include <fstream>
 #include <iostream>
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
-using boost::property_tree::ptree;
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 
 struct ReplaySpatialFrame {
     unsigned long frameTime_ms;
@@ -315,13 +315,14 @@ public:
 
 protected:
     std::chrono::milliseconds matchStartTime;
-    std::list<boost::property_tree::ptree> matchActions;
+    json matchActions;
 
-    ptree MatchAction();
 
-    ptree MatchInfo();
+    json MatchAction();
 
-    ptree MatchLineup();
+    json MatchInfo();
+
+    json MatchLineup();
 
     void GetReplaySpatials(std::list<boost::intrusive_ptr<Spatial>> &spatials);
 

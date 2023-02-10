@@ -27,12 +27,10 @@
 #include "menu/startmatch/loadingmatch.hpp"
 
 #include <iostream>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 using namespace std;
 using namespace std::chrono;
-using boost::property_tree::ptree;
+
 
 
 const unsigned int replaySize_ms = 10000;
@@ -44,6 +42,8 @@ Match::Match(MatchData *matchData, const std::vector<IHIDevice *> &controllers) 
     Log(e_Notice, "Match", "Match", "Starting Match");
 
     _positionLogging = false;
+    
+    
 
     // shared ptr to menutask, because menutask shouldn't die before match does
     menuTask = GetMenuTask();
@@ -447,37 +447,36 @@ Match::~Match() {
  *  - n_HomeGoals
  *  - n_AwayGoals
  *  - n_HomeOrAway
- *  They are then stored inside a list as a ptree item.
+ *  They are then stored inside a list as a json item.
  */
 void Match::StoreMatchAction(const string &action, int actionCodes[], PlayerData *playerData, TeamData *teamData,
                              unsigned long matchTime) {
-    ptree matchAction;
+    json matchAction;
 
-    matchAction.put("c_Action", action);
-    matchAction.put("c_ActionMinute", to_string((matchTime / 1000) / 60));
-    matchAction.put("c_Period", GetMatchPhase());
+    matchAction["c_Action"] = action;
+    matchAction["c_ActionMinute"] = to_string((matchTime / 1000) / 60);
+    matchAction["c_Period"] =  GetMatchPhase();
 
-    matchAction.put("c_Person", playerData->GetFirstName() + " " + playerData->GetLastName());
-    matchAction.put("c_PersonFirstName", playerData->GetFirstName());
-    matchAction.put("c_PersonLastName", playerData->GetLastName());
-    matchAction.put("c_PersonShort", playerData->GetLastName());
-    matchAction.put("c_PersonSort",
-                    playerData->GetLastName() + ", " + playerData->GetFirstName());
+    matchAction["c_Person"] =  playerData->GetFirstName() + " " + playerData->GetLastName();
+    matchAction["c_PersonFirstName"] =  playerData->GetFirstName();
+    matchAction["c_PersonLastName"] =  playerData->GetLastName();
+    matchAction["c_PersonShort"] =  playerData->GetLastName();
+    matchAction["c_PersonSort"] =  playerData->GetLastName() + ", " + playerData->GetFirstName();
 
-    matchAction.put("c_Team", teamData->GetName());
-    matchAction.put("c_TeamShort", teamData->GetShortName());
+    matchAction["c_Team"] =  teamData->GetName();
+    matchAction["c_TeamShort"] =  teamData->GetShortName();
 
-    matchAction.put("n_ActionCode", actionCodes[0]);
-    matchAction.put("n_ActionCode2", actionCodes[1]);
-    matchAction.put("n_ActionCode3", actionCodes[2]);
-    matchAction.put("n_ActionSet", actionCodes[3]);
+    matchAction["n_ActionCode"] =  actionCodes[0];
+    matchAction["n_ActionCode2"] =  actionCodes[1];
+    matchAction["n_ActionCode3"] =  actionCodes[2];
+    matchAction["n_ActionSet"] =  actionCodes[3];
 
-    matchAction.put("n_ActionTime", matchTime);
-    matchAction.put("n_HomeGoals", GetMatchData()->GetGoalCount(0));
-    matchAction.put("n_AwayGoals", GetMatchData()->GetGoalCount(1));
+    matchAction["n_ActionTime"] =  matchTime;
+    matchAction["n_HomeGoals"] =  GetMatchData()->GetGoalCount(0);
+    matchAction["n_AwayGoals"] =  GetMatchData()->GetGoalCount(1);
 
     int homeOrAway = (teams[0]->GetTeamData() == teamData) ? 0 : 1;
-    matchAction.put("n_HomeOrAway", homeOrAway);
+    matchAction["n_HomeOrAway"] =  homeOrAway;
 
     matchActions.push_back(matchAction);
 }
@@ -498,35 +497,35 @@ void Match::StoreMatchAction(const string &action, int actionCodes[], PlayerData
  *  - c_TeamShort
  *  - n_FunctionCode
  */
-ptree Match::MatchLineup() {
-    ptree matchLineup;
+json Match::MatchLineup() {
+    json matchLineup;
     for (Team *team: teams) {
         for (Player *teamPlayer: team->GetAllPlayers()) {
-            ptree inMatchLineup;
+            json inMatchLineup;
 
             bool redCard = (teamPlayer->GetCards() == 2 || teamPlayer->GetCards() == 3 || teamPlayer->GetCards() == 4);
-            inMatchLineup.put("b_RedCard", redCard);
+            inMatchLineup["b_RedCard"] =  redCard;
 
             PlayerData *playerData = teamPlayer->GetPlayerData();
             int functionCode;
             for (auto role: playerData->GetRoles()) {
                 functionCode = GetRoleInt(role);
-                inMatchLineup.put("c_Function", GetRoleName(role));
-                inMatchLineup.put("c_FunctionShort", GetRoleNameShort(role));
+                inMatchLineup["c_Function"] =  GetRoleName(role);
+                inMatchLineup["c_FunctionShort"] =  GetRoleNameShort(role);
             }
-            inMatchLineup.put("c_Person", playerData->GetFirstName() + " " + playerData->GetLastName());
-            inMatchLineup.put("c_PersonFirstName", playerData->GetFirstName());
-            inMatchLineup.put("c_PersonLastName", playerData->GetLastName());
-            inMatchLineup.put("c_PersonShort", playerData->GetLastName());
-            inMatchLineup.put("c_PersonSort",
-                              playerData->GetLastName() + ", " + playerData->GetFirstName());
+            inMatchLineup["c_Person"] =  playerData->GetFirstName() + " " + playerData->GetLastName();
+            inMatchLineup["c_PersonFirstName"] =  playerData->GetFirstName();
+            inMatchLineup["c_PersonLastName"] =  playerData->GetLastName();
+            inMatchLineup["c_PersonShort"] =  playerData->GetLastName();
+            inMatchLineup["c_PersonSort"] =
+                              playerData->GetLastName() + ", " + playerData->GetFirstName();
 
-            inMatchLineup.put("c_Team", team->GetTeamData()->GetName());
-            inMatchLineup.put("c_TeamShort", team->GetTeamData()->GetShortName());
+            inMatchLineup["c_Team"] =  team->GetTeamData()->GetName();
+            inMatchLineup["c_TeamShort"] =  team->GetTeamData()->GetShortName();
 
-            inMatchLineup.put("n_FunctionCode", functionCode);
+            inMatchLineup["n_FunctionCode"] =  functionCode;
 
-            matchLineup.push_back(make_pair("", inMatchLineup));
+            matchLineup.push_back(inMatchLineup);
         }
     }
     return matchLineup;
@@ -548,43 +547,43 @@ ptree Match::MatchLineup() {
  *  - n_AwayGoals
  *  - n_Spectators
  */
-ptree Match::MatchInfo() {
-    ptree matchInfo, inMatchInfo;
+json Match::MatchInfo() {
+    json matchInfo, inMatchInfo;
 
-    inMatchInfo.put("c_HomeTeam", teams[0]->GetTeamData()->GetName());
-    inMatchInfo.put("c_HomeTeamShort", teams[0]->GetTeamData()->GetShortName());
-    inMatchInfo.put("c_AwayTeam", teams[1]->GetTeamData()->GetName());
-    inMatchInfo.put("c_AwayTeamShort", teams[1]->GetTeamData()->GetShortName());
+    inMatchInfo["c_HomeTeam"] =  teams[0]->GetTeamData()->GetName();
+    inMatchInfo["c_HomeTeamShort"] =  teams[0]->GetTeamData()->GetShortName();
+    inMatchInfo["c_AwayTeam"] =  teams[1]->GetTeamData()->GetName();
+    inMatchInfo["c_AwayTeamShort"] =  teams[1]->GetTeamData()->GetShortName();
 
     string fullTime = to_string(matchData->GetGoalCount(0)) + "-" + to_string(matchData->GetGoalCount(1));
     string halftime =
             "(" + to_string(matchData->GetHalfTimeGoalCount(0)) + "-" + to_string(matchData->GetHalfTimeGoalCount(1)) +
             ")";
-    inMatchInfo.put("c_Score", fullTime + " " + halftime);
+    inMatchInfo["c_Score"] =  fullTime + " " + halftime;
 
     auto date = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
-    inMatchInfo.put("d_Date", "/Date(" + to_string(date.count()) + ")/");
-    inMatchInfo.put("d_DateLocal", "/Date(" + to_string(date.count()) + ")/");
-    inMatchInfo.put("d_MatchStartTime", "/Date(" + to_string(matchStartTime.count()) + ")/");
-    inMatchInfo.put("d_MatchStartTimeLocal", "/Date(" + to_string(matchStartTime.count()) + ")/");
+    inMatchInfo["d_Date"] =  "/Date(" + to_string(date.count()) + ")/";
+    inMatchInfo["d_DateLocal"] =  "/Date(" + to_string(date.count()) + ")/";
+    inMatchInfo["d_MatchStartTime"] =  "/Date(" + to_string(matchStartTime.count()) + ")/";
+    inMatchInfo["d_MatchStartTimeLocal"] =  "/Date(" + to_string(matchStartTime.count()) + ")/";
 
-    inMatchInfo.put("n_HomeGoals", GetMatchData()->GetGoalCount(0));
-    inMatchInfo.put("n_AwayGoals", GetMatchData()->GetGoalCount(1));
-    inMatchInfo.put("n_Spectators", 0); // since it is a digital game
+    inMatchInfo["n_HomeGoals"] =  GetMatchData()->GetGoalCount(0);
+    inMatchInfo["n_AwayGoals"] =  GetMatchData()->GetGoalCount(1);
+    inMatchInfo["n_Spectators"] =  0; // since it is a digital game
 
-    matchInfo.push_back(make_pair("", inMatchInfo));
+    matchInfo.push_back(inMatchInfo);
     return matchInfo;
 }
 
 /*
- * The function MatchAction takes all the stored ptrees by StoreMatchAction and puts them inside another ptree.
+ * The function MatchAction takes all the stored json by StoreMatchAction and puts them inside another json.
  */
-ptree Match::MatchAction() {
-    ptree matchAction;
+json Match::MatchAction() {
+    json matchAction;
 
-    for (const ptree &inMatchAction: matchActions) {
-        matchAction.push_back(make_pair("", inMatchAction));
+    for (const json &inMatchAction: matchActions) {
+        matchAction.push_back(inMatchAction);
     }
     return matchAction;
 }
@@ -594,16 +593,17 @@ void Match::Exit() {
 
     /*
      * When the match has ended the three functions above: MatchAction, MatchInfo, and MatchLineup are called,
-     * they generate the child ptrees. Then they are added to the parent ptree and written to a JSON file.
+     * they generate the child jsons. Then they are added to the parent json and written to file.
      */
 
-    ptree pt;
+	json jsonMatchData;
+    jsonMatchData["MatchActions"] = MatchAction();
+    jsonMatchData["MatchInfo"] = MatchInfo();
+    jsonMatchData["MatchLineup"] = MatchLineup();
 
-    pt.add_child("MatchActions", MatchAction());
-    pt.add_child("MatchInfo", MatchInfo());
-    pt.add_child("MatchLineup", MatchLineup());
 
-    write_json("output.json", pt);
+	std::ofstream o("output.json");
+	o << std::setw(4) << jsonMatchData << std::endl;
 
     if (Verbose()) printf("\nscene3D tree before match Exit():\n");
     if (Verbose()) scene3D->PrintTree();
